@@ -4,7 +4,18 @@
 resource "aws_instance" "Build_server" {
   ami           = "ami-0bb84b8ffd87024d8"
   instance_type = "t2.micro"
-  vpc_security_group_ids = [aws_security_group.Build_SG.id]
+  user_data = file("startup_Build.sh")
+  network_interface {
+    network_interface_id = aws_network_interface.private_Build_server.id
+    device_index = 0
+  }
+
+
+
+
+
+#security_groups = [aws_security_group.Build_SG.id]
+
 
   tags = {
     Name = "Build_server"
@@ -49,14 +60,15 @@ resource "aws_security_group" "Build_SG" {
 resource "aws_network_interface" "private_Build_server" {
     subnet_id = "subnet-0513abf3db97a734c"
     private_ips = ["172.31.22.10"]
+    security_groups = [aws_security_group.Build_SG.id]
     }
     
-resource "aws_network_interface_attachment" "private_Build_attachment" {
+/*resource "aws_network_interface_attachment" "private_Build_attachment" {
     instance_id = aws_instance.Build_server.id
     device_index = 1
     network_interface_id = aws_network_interface.private_Build_server.id
   }
-
+*/
 
 
 #########################################################################
@@ -65,7 +77,11 @@ resource "aws_network_interface_attachment" "private_Build_attachment" {
 resource "aws_instance" "Deployment_server" {
   ami           = "ami-0bb84b8ffd87024d8"
   instance_type = "t2.micro"
-  vpc_security_group_ids = [aws_security_group.Deployment_SG.id]
+  user_data = file("startup_Deployment.sh")
+  network_interface {
+    network_interface_id = aws_network_interface.private_Deployment_server.id
+    device_index = 0
+  }
     tags = {
     Name = "Deployment_server"
   }
@@ -74,13 +90,16 @@ resource "aws_instance" "Deployment_server" {
 resource "aws_network_interface" "private_Deployment_server" {
     subnet_id = "subnet-0513abf3db97a734c"
     private_ips = ["172.31.22.11"]
+    security_groups = [aws_security_group.Deployment_SG.id]
     }
+
+
     
-resource "aws_network_interface_attachment" "private_Deployment_attachment" {
+/*resource "aws_network_interface_attachment" "private_Deployment_attachment" {
     instance_id = aws_instance.Deployment_server.id
     device_index = 1
     network_interface_id = aws_network_interface.private_Deployment_server.id
-  }
+  }*/
 
 resource "aws_security_group" "Deployment_SG" {
   ingress {
@@ -123,8 +142,11 @@ resource "aws_security_group" "Deployment_SG" {
 resource "aws_instance" "Ansible_server" {
   ami           = "ami-0bb84b8ffd87024d8"
   instance_type = "t2.micro"
-  vpc_security_group_ids = [aws_security_group.Ansible_SG.id]
-  user_data = file("startup.sh")
+    network_interface {
+    device_index = 0
+    network_interface_id = aws_network_interface.private_Ansible_server.id
+  }
+  user_data = file("startup_Ansible.sh")
   tags = {
     Name = "Ansible_server"
   }
@@ -134,14 +156,15 @@ resource "aws_instance" "Ansible_server" {
 resource "aws_network_interface" "private_Ansible_server" {
     subnet_id = "subnet-0513abf3db97a734c"
     private_ips = ["172.31.22.12"]
+    security_groups = [aws_security_group.Ansible_SG.id]
     }
     
-resource "aws_network_interface_attachment" "private_Ansible_attachment" {
+/*resource "aws_network_interface_attachment" "private_Ansible_attachment" {
     instance_id = aws_instance.Ansible_server.id
-    device_index = 1
+    device_index = 0
     network_interface_id = aws_network_interface.private_Ansible_server.id
   }
-
+*/
 resource "aws_security_group" "Ansible_SG" {
 
   ingress {
@@ -182,3 +205,4 @@ egress {
     Name = "Ansible_SG"
   }
 }
+
