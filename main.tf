@@ -18,11 +18,18 @@ resource "aws_security_group" "Build_SG" {
     protocol         = "tcp"
     cidr_blocks      = ["0.0.0.0/0"]
   }
+
   ingress {
     from_port        = 8080
     to_port          = 8080
     protocol         = "tcp"
     cidr_blocks      = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port   = -1
+    to_port     = -1
+    protocol    = "icmp"
+    cidr_blocks = ["172.31.0.0/16"]
   }
 
   egress {
@@ -88,6 +95,22 @@ resource "aws_security_group" "Deployment_SG" {
     protocol         = "tcp"
     cidr_blocks      = ["0.0.0.0/0"]
   }
+
+  ingress {
+    from_port   = -1
+    to_port     = -1
+    protocol    = "icmp"
+    cidr_blocks = ["172.31.0.0/16"]
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+  
   tags = {
     Name = "Deployment_SG"
   }
@@ -120,6 +143,7 @@ resource "aws_network_interface_attachment" "private_Ansible_attachment" {
   }
 
 resource "aws_security_group" "Ansible_SG" {
+
   ingress {
     from_port        = 22
     to_port          = 22
@@ -140,6 +164,12 @@ resource "aws_security_group" "Ansible_SG" {
     cidr_blocks      = ["0.0.0.0/0"]
   }
 
+  ingress {
+    from_port   = -1
+    to_port     = -1
+    protocol    = "icmp"
+    cidr_blocks = ["172.31.0.0/16"]
+  }
 egress {
     from_port        = 0
     to_port          = 0
